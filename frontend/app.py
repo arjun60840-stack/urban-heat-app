@@ -21,6 +21,9 @@ st.header("City Search & Geolocation")
 city_name = st.text_input("Enter a City Name to Analyze:", value="New York")
 
 if st.button("Analyze City"):
+    st.session_state.show_analysis = True
+
+if st.session_state.get("show_analysis", False):
     # 2. Fetch Heatmap Data from Backend
     with st.spinner(f"Analyzing heat data for {city_name}..."):
         try:
