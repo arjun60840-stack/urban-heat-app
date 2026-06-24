@@ -1,0 +1,7 @@
+venv/
+venv_311/
+__pycache__/
+*.pyc
+.env
+urban_heat.db
+static/reports/*.pdf
