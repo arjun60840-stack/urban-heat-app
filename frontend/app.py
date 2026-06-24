@@ -26,12 +26,12 @@ if st.button("Analyze City"):
         try:
             # We also hit the analyze-city endpoint to log it in DB
             requests.post(
-                "http://localhost:8000/analysis/analyze-city", 
+                "https://urban-heat-app.onrender.com/analysis/analyze-city", 
                 json={"city_name": city_name, "latitude": 40.7128, "longitude": -74.0060}
             )
             
-            res_map = requests.get(f"http://localhost:8000/analysis/heat-map?city_name={city_name}")
-            res_hotspots = requests.get(f"http://localhost:8000/analysis/hotspots?city_name={city_name}")
+            res_map = requests.get(f"https://urban-heat-app.onrender.com/analysis/heat-map?city_name={city_name}")
+            res_hotspots = requests.get(f"https://urban-heat-app.onrender.com/analysis/hotspots?city_name={city_name}")
             
             if res_map.status_code == 200 and res_hotspots.status_code == 200:
                 data = res_map.json()
@@ -77,7 +77,7 @@ if st.button("Analyze City"):
                 # 6. Recommendation Engine
                 st.write("---")
                 st.header("💡 Cooling Recommendations")
-                res_recs = requests.post(f"http://localhost:8000/interventions/recommendations", json={"city_name": city_name, "risk_category": overall_risk})
+                res_recs = requests.post(f"https://urban-heat-app.onrender.com/interventions/recommendations", json={"city_name": city_name, "risk_category": overall_risk})
                 if res_recs.status_code == 200:
                     recs_data = res_recs.json().get("recommendations", [])
                     for rec in recs_data:
@@ -99,7 +99,7 @@ if st.button("Analyze City"):
             parks_to_add = col_sim3.slider("New Parks", 0, 20, 2)
             
             if st.button("Run Simulation"):
-                sim_res = requests.post("http://localhost:8000/interventions/simulate", json={
+                sim_res = requests.post("https://urban-heat-app.onrender.com/interventions/simulate", json={
                     "city_name": city_name,
                     "trees_added": trees_to_add,
                     "cool_roofs_area": roofs_area,
@@ -114,7 +114,7 @@ if st.button("Analyze City"):
             st.write("---")
             st.header("📈 Future Heat Prediction")
             st.write("Projected temperature trend over the next 12 months.")
-            pred_res = requests.post("http://localhost:8000/ai/predict", json={"city_name": city_name, "months_ahead": 12})
+            pred_res = requests.post("https://urban-heat-app.onrender.com/ai/predict", json={"city_name": city_name, "months_ahead": 12})
             if pred_res.status_code == 200:
                 forecast_data = pred_res.json().get("forecast", [])
                 if forecast_data:
@@ -127,7 +127,7 @@ if st.button("Analyze City"):
             st.header("🤖 AI City Planner Assistant")
             user_msg = st.text_input("Ask the AI about urban planning for this city:")
             if st.button("Send to AI"):
-                ai_res = requests.post("http://localhost:8000/ai/chat", json={
+                ai_res = requests.post("https://urban-heat-app.onrender.com/ai/chat", json={
                     "message": user_msg,
                     "context": {"city": city_name, "risk": overall_risk, "temp": base_temp}
                 })
@@ -138,14 +138,14 @@ if st.button("Analyze City"):
             st.write("---")
             st.header("📄 Export Intelligence Report")
             if st.button("Generate PDF Report"):
-                rep_res = requests.post("http://localhost:8000/reports/generate-report", json={
+                rep_res = requests.post("https://urban-heat-app.onrender.com/reports/generate-report", json={
                     "city_name": city_name,
                     "data_summary": {"Average Temp": f"{base_temp}°C", "Risk Level": overall_risk}
                 })
                 if rep_res.status_code == 200:
                     report_url = rep_res.json().get("report_url")
                     st.success("Report generated successfully!")
-                    st.markdown(f"[📥 Download PDF Report](http://localhost:8000{report_url})")
+                    st.markdown(f"[📥 Download PDF Report](https://urban-heat-app.onrender.com{report_url})")
 
         except Exception as e:
             st.error("Failed to connect to the backend server. (If you aren't running the backend locally right now, you will see this error).")
