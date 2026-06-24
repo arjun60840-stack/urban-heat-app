@@ -123,7 +123,7 @@ if st.session_state.get("show_analysis", False):
                 if forecast_data:
                     import pandas as pd
                     df = pd.DataFrame(forecast_data)
-                    st.line_chart(df.set_index("month"))
+                    st.bar_chart(df.set_index("month"))
             
             # Phase 8: AI City Planner Assistant
             st.write("---")
