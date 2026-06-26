@@ -8,13 +8,13 @@ from ..logger import logger
 router = APIRouter(prefix="/analysis", tags=["Analysis"])
 
 def geocode_city(city_name: str):
-    url = f"https://nominatim.openstreetmap.org/search?q={city_name}&format=json&limit=1"
-    headers = {"User-Agent": "UrbanHeatApp/1.0"}
+    url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}&count=1&language=en&format=json"
     try:
-        res = requests.get(url, headers=headers)
-        if res.status_code == 200 and len(res.json()) > 0:
-            data = res.json()[0]
-            return float(data["lat"]), float(data["lon"])
+        res = requests.get(url)
+        if res.status_code == 200:
+            data = res.json().get("results", [])
+            if len(data) > 0:
+                return float(data[0]["latitude"]), float(data[0]["longitude"])
     except Exception as e:
         logger.error(f"Geocoding failed: {e}")
     return None, None
