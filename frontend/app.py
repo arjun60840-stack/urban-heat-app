@@ -16,6 +16,19 @@ st.markdown("Analyze urban heat islands and discover cooling interventions.")
 st.sidebar.title("Navigation")
 st.sidebar.info("Map & GIS Module Active")
 
+@st.cache_data(ttl=600)
+def get_city_analysis(city_name):
+    requests.post(
+        "https://urban-heat-app.onrender.com/analysis/analyze-city", 
+        json={"city_name": city_name, "latitude": 40.7128, "longitude": -74.0060}
+    )
+    res_map = requests.get(f"https://urban-heat-app.onrender.com/analysis/heat-map?city_name={city_name}")
+    res_hotspots = requests.get(f"https://urban-heat-app.onrender.com/analysis/hotspots?city_name={city_name}")
+    
+    if res_map.status_code == 200 and res_hotspots.status_code == 200:
+        return res_map.json(), res_hotspots.json()
+    return None, None
+
 # 1. City Search
 st.header("City Search & Geolocation")
 city_name = st.text_input("Enter a City Name to Analyze:", value="New York")
@@ -27,31 +40,22 @@ if st.session_state.get("show_analysis", False):
     # 2. Fetch Heatmap Data from Backend
     with st.spinner(f"Analyzing heat data for {city_name}..."):
         try:
-            # We also hit the analyze-city endpoint to log it in DB
-            requests.post(
-                "https://urban-heat-app.onrender.com/analysis/analyze-city", 
-                json={"city_name": city_name, "latitude": 40.7128, "longitude": -74.0060}
-            )
+            map_data, hotspot_data_json = get_city_analysis(city_name)
             
-            res_map = requests.get(f"https://urban-heat-app.onrender.com/analysis/heat-map?city_name={city_name}")
-            res_hotspots = requests.get(f"https://urban-heat-app.onrender.com/analysis/hotspots?city_name={city_name}")
-            
-            if res_map.status_code == 200 and res_hotspots.status_code == 200:
-                data = res_map.json()
-                heatmap_data = data.get("heatmap_data", [])
+            if map_data and hotspot_data_json:
+                heatmap_data = map_data.get("heatmap_data", [])
                 
-                hotspot_data = res_hotspots.json()
-                base_temp = hotspot_data.get("base_temperature")
-                overall_risk = hotspot_data.get("overall_risk")
+                base_temp = hotspot_data_json.get("base_temperature")
+                overall_risk = hotspot_data_json.get("overall_risk")
                 
                 # Display Risk Metrics
                 col1, col2, col3 = st.columns(3)
                 col1.metric("Average Temperature", f"{base_temp} °C")
                 col2.metric("Overall Heat Risk", overall_risk)
-                col3.metric("Detected Hotspots", len(hotspot_data.get("hotspots", [])))
+                col3.metric("Detected Hotspots", len(hotspot_data_json.get("hotspots", [])))
                 
                 st.write("### Hotspot Breakdown")
-                for hs in hotspot_data.get("hotspots", []):
+                for hs in hotspot_data_json.get("hotspots", []):
                     st.info(f"**{hs['name']}** - Estimated Temp: {hs['estimated_temp']}°C | Risk: {hs['risk']}")
                 
                 # 3. OpenStreetMap Integration via Folium
