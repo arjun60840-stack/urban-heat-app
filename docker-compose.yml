@@ -1,0 +1,49 @@
+# ============================================================
+# docker-compose.yml — Urban Heat App (backend + frontend)
+# ============================================================
+# Usage:
+#   docker compose up --build        # build & start both services
+#   docker compose down              # stop & remove containers
+# ============================================================
+
+services:
+  # ---- FastAPI backend ----
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Persist generated PDF reports across container restarts.
+      - reports_data:/app/static/reports
+      # Mount the SQLite database so both services share the same file.
+      - ./urban_heat.db:/app/urban_heat.db
+    restart: unless-stopped
+
+  # ---- Streamlit frontend ----
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      # The frontend reaches the backend via Docker's internal DNS.
+      - BACKEND_URL=http://backend:8000
+    volumes:
+      # Share the same reports volume so the frontend can serve PDFs.
+      - reports_data:/app/static/reports
+      # Share the same SQLite database file.
+      - ./urban_heat.db:/app/urban_heat.db
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# Named volume for PDF reports — survives container rebuilds.
+volumes:
+  reports_data:

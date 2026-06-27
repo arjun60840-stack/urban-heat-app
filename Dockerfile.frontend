@@ -1,0 +1,29 @@
+# ============================================================
+# Dockerfile.frontend — Streamlit frontend for Urban Heat App
+# ============================================================
+# Build:  docker build -f Dockerfile.frontend -t urban-heat-frontend .
+# Run:    docker run --env-file .env -p 8501:8501 urban-heat-frontend
+# ============================================================
+
+FROM python:3.11-slim
+
+# Prevent Python from writing .pyc files and enable unbuffered stdout/stderr.
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# ---------- Dependencies ----------
+# Copy requirements first to leverage Docker layer caching.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ---------- Application code ----------
+COPY frontend/ frontend/
+
+# ---------- Runtime ----------
+EXPOSE 8501
+
+CMD ["streamlit", "run", "frontend/app.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0"]

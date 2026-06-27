@@ -1,0 +1,36 @@
+# ============================================================
+# .dockerignore — Urban Heat App
+# ============================================================
+# Keeps the Docker build context small and prevents secrets
+# or runtime data from leaking into images.
+# ============================================================
+
+# Virtual environments
+venv/
+venv_311/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Version control
+.git/
+.github/
+
+# Secrets — injected at runtime via env_file, never baked in
+.env
+
+# Runtime data — bind-mounted, not copied into the image
+urban_heat.db
+
+# Docker files (not needed inside containers)
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# IDE / OS artifacts
+.vscode/
+.idea/
+*.swp
+Thumbs.db

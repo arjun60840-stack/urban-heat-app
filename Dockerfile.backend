@@ -1,0 +1,34 @@
+# ============================================================
+# Dockerfile.backend — FastAPI backend for Urban Heat App
+# ============================================================
+# Build:  docker build -f Dockerfile.backend -t urban-heat-backend .
+# Run:    docker run --env-file .env -p 8000:8000 urban-heat-backend
+# ============================================================
+
+FROM python:3.11-slim
+
+# Prevent Python from writing .pyc files and enable unbuffered stdout/stderr
+# so container logs appear immediately.
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# ---------- Dependencies ----------
+# Copy requirements first to leverage Docker layer caching —
+# dependencies are re-installed only when requirements.txt changes.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ---------- Application code ----------
+COPY backend/ backend/
+
+# ---------- Static assets ----------
+# The static/reports/ directory holds generated PDF reports.
+# In production, mount a volume here so reports persist across restarts.
+COPY static/ static/
+
+# ---------- Runtime ----------
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

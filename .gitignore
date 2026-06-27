@@ -4,4 +4,9 @@ __pycache__/
 *.pyc
 .env
 urban_heat.db
+test_urban_heat.db
 static/reports/*.pdf
+.pytest_cache/
+htmlcov/
+coverage.xml
+*.egg-info/
